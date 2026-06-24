@@ -1,48 +1,381 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>📘 Student Portal | My Information</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Portal</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:system-ui,sans-serif;
+}
+
+body{
+background:linear-gradient(145deg,#eef2f7,#d9e0e8);
+min-height:100vh;
+padding:2rem;
+}
+
+.app-container{
+max-width:900px;
+margin:auto;
+background:white;
+border-radius:25px;
+overflow:hidden;
+box-shadow:0 10px 30px rgba(0,0,0,.15);
+}
+
+.app-header{
+background:#1e2a3e;
+color:white;
+padding:25px;
+text-align:center;
+}
+
+.app-header h1{
+font-size:2rem;
+margin-bottom:8px;
+}
+
+.lookup-card{
+padding:25px;
+}
+
+.lookup-card h2{
+margin-bottom:15px;
+color:#1e2a3e;
+}
+
+.input-group{
+margin-bottom:15px;
+}
+
+.input-group label{
+display:block;
+margin-bottom:5px;
+font-weight:600;
+}
+
+.input-group input,
+.input-group select{
+width:100%;
+padding:12px;
+border:1px solid #cbd5e1;
+border-radius:12px;
+font-size:15px;
+}
+
+.btn-primary{
+background:#2c6e6e;
+color:white;
+border:none;
+padding:12px 20px;
+border-radius:50px;
+cursor:pointer;
+font-weight:600;
+}
+
+.btn-primary:hover{
+background:#1f5555;
+}
+
+.profile-card{
+margin:20px;
+background:#f8fafc;
+padding:25px;
+border-radius:20px;
+display:none;
+}
+
+.profile-card h2{
+margin-bottom:15px;
+color:#1e2a3e;
+}
+
+.info-row{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:12px;
+margin-bottom:10px;
+background:white;
+border-radius:12px;
+}
+
+.info-label{
+font-weight:700;
+}
+
+.grade-badge{
+background:#dcfce7;
+padding:5px 12px;
+border-radius:20px;
+font-weight:700;
+}
+
+.status{
+margin-top:15px;
+padding:10px;
+border-radius:10px;
+display:none;
+}
+
+.error{
+background:#fee2e2;
+color:#b91c1c;
+}
+
+.success{
+background:#dcfce7;
+color:#166534;
+}
+
+footer{
+padding:15px;
+text-align:center;
+font-size:.8rem;
+color:#64748b;
+}
+
+@media(max-width:768px){
+
+.info-row{
+flex-direction:column;
+align-items:flex-start;
+gap:5px;
+}
+
+}
+</style>
 </head>
+
 <body>
+
 <div class="app-container">
-  <div class="app-header">
-    <h1>Student Portal</h1>
-    <p>🔐 View your personal academic information</p>
-  </div>
 
-  <div class="selector-card">
-    <div class="selector-title">🔍 Find my record</div>
-    <div class="lookup-form">
-      <div class="input-group">
-        <label>👤 Select your name</label>
-        <select id="studentSelect">
-          <option value="">-- Choose a student --</option>
-        </select>
-      </div>
-      <div class="input-group">
-        <label>🆔 Or enter Student ID</label>
-        <input type="text" id="studentIdInput" placeholder="e.g., S24001">
-      </div>
-      <button id="lookupBtn" class="btn-primary">📖 Show my info</button>
-    </div>
-  </div>
-
-  <div id="statusMsg" class="status-msg"></div>
-
-  <div class="profile-card" id="profileCard" style="display: none;">
-    <div class="card-header">
-      <span style="font-size: 1.8rem;">📄</span>
-      <h2>Student Information</h2>
-    </div>
-    <div class="student-details" id="studentDetails"></div>
-  </div>
-
-  <footer>📌 Data provided by the Student Management System</footer>
+<div class="app-header">
+<h1>🎓 Student Portal</h1>
+<p>View Your Academic Information</p>
 </div>
 
-<script src="js/student-portal.js"></script>
+<div class="lookup-card">
+
+<h2>Search Student</h2>
+
+<div class="input-group">
+<label>👤 Select Student Name</label>
+<select id="studentSelect">
+<option value="">-- Select Student Name --</option>
+</select>
+</div>
+
+<div class="input-group">
+<label>🆔 Select Student ID</label>
+<select id="studentIdSelect">
+<option value="">-- Select Student ID --</option>
+</select>
+</div>
+
+<button class="btn-primary" id="searchBtn">
+🔍 Show Information
+</button>
+
+<div id="statusMsg" class="status"></div>
+
+</div>
+
+<div class="profile-card" id="profileCard">
+
+<h2>📄 Student Information</h2>
+
+<div class="info-row">
+<span class="info-label">👤 Full Name</span>
+<span id="displayName"></span>
+</div>
+
+<div class="info-row">
+<span class="info-label">🆔 Student ID</span>
+<span id="displayStudentId"></span>
+</div>
+
+<div class="info-row">
+<span class="info-label">📧 Email</span>
+<span id="displayEmail"></span>
+</div>
+
+<div class="info-row">
+<span class="info-label">📊 Grade</span>
+<span class="grade-badge" id="displayGrade"></span>
+</div>
+
+</div>
+
+<footer>
+📁 Data loaded from Student Manager localStorage
+</footer>
+
+</div>
+
+<script>
+
+let students = [];
+
+const studentSelect = document.getElementById("studentSelect");
+const studentIdSelect = document.getElementById("studentIdSelect");
+const searchBtn = document.getElementById("searchBtn");
+const profileCard = document.getElementById("profileCard");
+const statusMsg = document.getElementById("statusMsg");
+
+function showMessage(message,isError=false){
+
+statusMsg.style.display="block";
+statusMsg.innerText=message;
+
+if(isError){
+statusMsg.className="status error";
+}else{
+statusMsg.className="status success";
+}
+
+setTimeout(()=>{
+statusMsg.style.display="none";
+},3000);
+
+}
+
+function loadStudents(){
+
+const stored =
+localStorage.getItem("studentManagerData");
+
+if(!stored){
+
+showMessage(
+"No student records found. Please add students in Student Manager.",
+true
+);
+
+return;
+}
+
+students = JSON.parse(stored);
+
+studentSelect.innerHTML =
+'<option value="">-- Select Student Name --</option>';
+
+studentIdSelect.innerHTML =
+'<option value="">-- Select Student ID --</option>';
+
+students.forEach(student=>{
+
+const nameOption =
+document.createElement("option");
+
+nameOption.value = student.studentId;
+nameOption.textContent = student.name;
+
+studentSelect.appendChild(nameOption);
+
+const idOption =
+document.createElement("option");
+
+idOption.value = student.studentId;
+idOption.textContent = student.studentId;
+
+studentIdSelect.appendChild(idOption);
+
+});
+
+}
+
+function displayStudent(student){
+
+profileCard.style.display = "block";
+
+document.getElementById("displayName").innerText =
+student.name;
+
+document.getElementById("displayStudentId").innerText =
+student.studentId;
+
+document.getElementById("displayEmail").innerText =
+student.email || "-";
+
+document.getElementById("displayGrade").innerText =
+student.grade + "%";
+
+}
+
+function searchStudent(){
+
+let selectedId = "";
+
+if(studentSelect.value){
+selectedId = studentSelect.value;
+}
+
+if(studentIdSelect.value){
+selectedId = studentIdSelect.value;
+}
+
+if(!selectedId){
+
+showMessage(
+"Please select a Student Name or Student ID.",
+true
+);
+
+return;
+}
+
+const student = students.find(
+s => s.studentId === selectedId
+);
+
+if(student){
+
+displayStudent(student);
+
+showMessage(
+"Student record found successfully."
+);
+
+}else{
+
+profileCard.style.display = "none";
+
+showMessage(
+"Student record not found.",
+true
+);
+
+}
+
+}
+
+studentSelect.addEventListener("change",()=>{
+
+studentIdSelect.value = studentSelect.value;
+
+});
+
+studentIdSelect.addEventListener("change",()=>{
+
+studentSelect.value = studentIdSelect.value;
+
+});
+
+searchBtn.addEventListener(
+"click",
+searchStudent
+);
+
+loadStudents();
+
+</script>
+
 </body>
 </html>
